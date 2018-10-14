@@ -19,12 +19,12 @@ class SampleApp(tk.Tk):
         self.title('NN_GUI')
         
         #Creating a container for a toolbar at the top of the main window
-        toolbar_container = tk.Frame(self)
-        toolbar_container.pack(side="top", fill="x", expand=True, anchor='n')
+        self.toolbar_container = tk.Frame(self)
+        self.toolbar_container.pack(side="top", fill="x", expand=True, anchor='n')
          
         #Creating a toolbar for switching between frames
-        toolbar = Toolbar(parent=toolbar_container, controller=self)
-        toolbar.pack(side="top", fill="x", expand=True)
+        self.toolbar = Toolbar(parent=self.toolbar_container, controller=self)
+        self.toolbar.pack(side="top", fill="x", expand=True)
         
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
@@ -48,12 +48,12 @@ class SampleApp(tk.Tk):
         self.show_frame("StartPage")
         
         #Creating a container for the statusbar at the bottom of the main window
-        statusbar_container = tk.Frame(self)
-        statusbar_container.pack(side="bottom", fill="x", expand=True, anchor='s')   
+        self.statusbar_container = tk.Frame(self)
+        self.statusbar_container.pack(side="bottom", fill="x", expand=True, anchor='s')   
         
         #Creating a statusbar
-        statusbar = StatusBar(parent=statusbar_container, controller=self)
-        statusbar.pack(side="bottom", fill="x", expand=True)
+        self.statusbar = StatusBar(parent=self.statusbar_container, controller=self)
+        self.statusbar.pack(side="bottom", fill="x", expand=True)
 
 
     def show_frame(self, page_name):
@@ -85,8 +85,8 @@ class PageOne(tk.Frame):
         self.controller = controller
         label = tk.Label(self, text="This is page 1", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
-        button = tk.Button(self, text="Go to the start page",
-                           command=lambda: controller.show_frame("StartPage"))
+        button = tk.Button(self, text="change status",
+                           command=lambda: controller.statusbar.set_status("tessssssst1"))
         button.pack()
 
 
@@ -97,8 +97,10 @@ class PageTwo(tk.Frame):
         self.controller = controller
         label = tk.Label(self, text="This is page 2", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
-        button = tk.Button(self, text="Go to the start page",
-                           command=lambda: controller.show_frame("StartPage"))
+        #button = tk.Button(self, text="Go to the start page",
+        #                  command=lambda: controller.show_frame("StartPage"))
+        button = tk.Button(self, text="change status",
+                           command=lambda: controller.statusbar.set_status("tessssssst2"))
         button.pack()
 
 
