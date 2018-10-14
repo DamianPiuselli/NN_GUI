@@ -21,7 +21,7 @@ class SampleApp(tk.Tk):
         #Creating a container for a toolbar at the top of the main window
         toolbar_container = tk.Frame(self)
         toolbar_container.pack(side="top", fill="x", expand=True, anchor='n')
-        
+         
         #Creating a toolbar for switching between frames
         toolbar = Toolbar(parent=toolbar_container, controller=self)
         toolbar.pack(side="top", fill="x", expand=True)
@@ -46,6 +46,15 @@ class SampleApp(tk.Tk):
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame("StartPage")
+        
+        #Creating a container for the statusbar at the bottom of the main window
+        statusbar_container = tk.Frame(self)
+        statusbar_container.pack(side="bottom", fill="x", expand=True, anchor='s')   
+        
+        #Creating a statusbar
+        statusbar = StatusBar(parent=statusbar_container, controller=self)
+        statusbar.pack(side="bottom", fill="x", expand=True)
+
 
     def show_frame(self, page_name):
         '''Show a frame for the given page name'''
@@ -98,16 +107,31 @@ class Toolbar(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        
+              
         #make a toolbar button for switching between frames
         for F in ('StartPage', 'PageOne', 'PageTwo'):
             self.new_button(controller,F)
         
     #make a toolbar button for switching between frames
     def new_button(self,controller, page_name):
-        x = tk.Button(self, text=page_name, command=lambda: controller.show_frame(page_name))
-        x.pack(side='left', fill='x', expand=False, ipady=3)
+        button = tk.Button(self, text=page_name, command=lambda: controller.show_frame(page_name))
+        button.pack(side='left', fill='x', expand=False, ipady=3)
 
+
+class StatusBar(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.label = tk.Label(self,text='testing...', bd=1, relief='sunken', anchor='sw')
+        self.label.pack(fill='x')
+
+    def set_status(self, status_text, *args):
+        self.label.config(text=status_text % args)
+        self.label.update_idletasks()
+    
+    def clear_status(self):
+        self.label.config(text='')
+        self.label.update_idletasks()
 
 #run app if nn_py_main is main.
 if __name__ == "__main__":
