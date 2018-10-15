@@ -6,7 +6,8 @@ Created on Tue Oct  9 22:39:53 2018
 @author: Damian Piuselli
 """
 
-import tkinter as tk                
+import tkinter as tk
+from tkinter import ttk as ttk
 from tkinter import font  as tkfont 
 
 
@@ -15,7 +16,7 @@ class SampleApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.title_font = tkfont.Font(family='Helvetica', size=11, slant="italic")
+        self.title_font = tkfont.Font(family='Verdana', size=12, weight='bold')
         self.title('NN_GUI')
         
         #Creating a container for a toolbar at the top of the main window
@@ -109,18 +110,22 @@ class Compile(tk.Frame):
         self.controller = controller
         #title
         self.title = tk.Label(self, text="Compile Model",bd=5, font=controller.title_font)
-        self.title.grid(row=0, rowspan=1)
+        self.title.grid(row=0, columnspan=1)
+        self.separator = ttk.Separator(self, orient="horizontal")
+        self.separator.grid(row=1, column=0,  columnspan=20, sticky="we")
         #first widget gets the number of layers of the NN.
         #apply button, call the draw_layers method
-        self.label = tk.Label(self, text='Number of Layers :')
+        self.label = ttk.Label(self, text='Number of Layers :')
         self.layers = tk.Spinbox(self, from_ =1, to_ =20, increment=1)
-        self.layers_apply = tk.Button(self, text='Apply', command=self.draw_layers)
-        self.label.grid(row=1, column=0, padx=5)
-        self.layers.grid(row=1, column=1, padx=5)
-        self.layers_apply.grid(row=1, column=2)
+        self.layers_apply = ttk.Button(self, text='Apply', command=self.draw_layers)
+        self.label.grid(row=2, column=0)
+        self.layers.grid(row=2, column=1)
+        self.layers_apply.grid(row=2, column=2)
+        self.separator2 = ttk.Separator(self, orient="horizontal")
+        self.separator2.grid(row=3, column=0,  columnspan=20, sticky="we")
         #list of widgets initialized empty
+        self.layer_types = ('opcion1','opcion2')
         self.layers_widgets = []
-        self.layers_widgets_values = []
                 
     #each type of layer have a different set of options and therefore 
     #different gui elements asociated to it. first draw_layers will display
@@ -132,32 +137,48 @@ class Compile(tk.Frame):
     def draw_layers(self):
         #destroying all widgets created on the last call to the function
         for widget in self.layers_widgets:
-            widget[0].destroy()
-            widget[1].destroy()
-        for values in self.layers_widgets_values:
-            values.set('')
-        
+            widget.destroy()
+            
         #deleting all references
         self.layers_widgets = []
-        self.layers_widgets_values = []
         
         #creating the appropiate number of widgets and storing a reference
         #in layers_widgets list
-        option_list = ('opcion1','opcion2')
+        
         for i in range(int(self.layers.get())):
-            selected_option = tk.StringVar()
-            selected_option.set(option_list[0])
-            n_layer = tk.Label(self, text='Layer number %s :' %(i+1))
-            layer_widget = tk.OptionMenu(self,selected_option,*option_list)
-            n_layer.grid(row=int(i)+2, column=0, padx=1)
-            layer_widget.grid(row=int(i)+2, column=1, padx=1)
-            self.layers_widgets.append([n_layer,layer_widget])
-            self.layers_widgets_values.append(selected_option)
+            layer_widget = LayerWidget(self,i)
+            layer_widget.grid(row=i+4, columnspan=5, sticky='w')
+            self.layers_widgets.append(layer_widget)
+            
+            
         
+#custom widget for layers, to be drawn in the compile frame.        
+class LayerWidget(tk.Frame):
+    
+    def __init__(self, parent, layer_index):
+        tk.Frame.__init__(self, parent)
+        self.layer_index = layer_index
+        self.layer_type = tk.StringVar()
+        self.default_layer_type = parent.layer_types[0]
+        #number of the layer
+        self.label = ttk.Label(self, text='Layer number %s :' %(self.layer_index+1), justify='left')
+        self.label.grid(row=0, column=0, rowspan=2, padx=1)
+        #option menu for the layer type and description 
+        self.layertype_label = ttk.Label(self, text='Layer type')
+        self.layertype_label.grid(row=0, column=1, padx=1)
+        self.layertype_widget = ttk.OptionMenu(self,self.layer_type,
+                                               self.default_layer_type,*parent.layer_types)
+        self.layertype_widget.grid(row=1, column=1, padx=1)
+        #add a separator below the widget
+        self.separator = ttk.Separator(self, orient="horizontal")
+        self.separator.grid(row=2, column=0,  columnspan=20, sticky="we")
+        #add a trace to
+        self.layer_type.trace('w',self.draw_something)
+#### testeando callbacks!
+    def draw_something(self, *args):
+        self.layertype_label1 = ttk.Label(self, text='Layer type')
+        self.layertype_label1.grid(row=0, column=2, padx=1)
         
-        
-
-
 class Toolbar(tk.Frame):
     
     def __init__(self, parent, controller):
@@ -170,7 +191,7 @@ class Toolbar(tk.Frame):
         
     #make a toolbar button for switching between frames
     def new_button(self,controller, page_name):
-        button = tk.Button(self, text=page_name,
+        button = ttk.Button(self, text=page_name,
                            command=lambda: controller.show_frame(page_name))
         button.pack(side='left', fill='x', expand=False, ipady=3)
 

@@ -20,7 +20,6 @@ def mean_pred(y_true, y_pred):
 
 
 model = Sequential()
-model.input
 model.add(Dense(1, kernel_initializer='normal', activation='linear', input_dim=1))
 model.add(Dense(1,activation='relu'))
 model.compile(optimizer='rmsprop',
