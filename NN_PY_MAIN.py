@@ -15,7 +15,7 @@ class SampleApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.title_font = tkfont.Font(family='Helvetica', size=12, weight="bold", slant="italic")
+        self.title_font = tkfont.Font(family='Helvetica', size=11, slant="italic")
         self.title('NN_GUI')
         
         #Creating a container for a toolbar at the top of the main window
@@ -35,7 +35,7 @@ class SampleApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, PageOne, PageTwo):
+        for F in (StartPage, PageOne, PageTwo, Compile):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -97,11 +97,65 @@ class PageTwo(tk.Frame):
         self.controller = controller
         label = tk.Label(self, text="This is page 2", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
-        #button = tk.Button(self, text="Go to the start page",
-        #                  command=lambda: controller.show_frame("StartPage"))
         button = tk.Button(self, text="change status",
                            command=lambda: controller.statusbar.set_status("tessssssst2"))
         button.pack()
+
+class Compile(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        #reference to controller app
+        self.controller = controller
+        #title
+        self.title = tk.Label(self, text="Compile Model",bd=5, font=controller.title_font)
+        self.title.grid(row=0, rowspan=1)
+        #first widget gets the number of layers of the NN.
+        #apply button, call the draw_layers method
+        self.label = tk.Label(self, text='Number of Layers :')
+        self.layers = tk.Spinbox(self, from_ =1, to_ =20, increment=1)
+        self.layers_apply = tk.Button(self, text='Apply', command=self.draw_layers)
+        self.label.grid(row=1, column=0, padx=5)
+        self.layers.grid(row=1, column=1, padx=5)
+        self.layers_apply.grid(row=1, column=2)
+        #list of widgets initialized empty
+        self.layers_widgets = []
+        self.layers_widgets_values = []
+                
+    #each type of layer have a different set of options and therefore 
+    #different gui elements asociated to it. first draw_layers will display
+    #a list of all the available layers types. Then when the type is selected
+    #the rest of the gui elements are dynamically drawn.
+    #for each layer im reserving 2 rows of space, to allow for options heavy
+    #layer types to potentially have more space available.
+    #the widgets are stored in a list 
+    def draw_layers(self):
+        #destroying all widgets created on the last call to the function
+        for widget in self.layers_widgets:
+            widget[0].destroy()
+            widget[1].destroy()
+        for values in self.layers_widgets_values:
+            values.set('')
+        
+        #deleting all references
+        self.layers_widgets = []
+        self.layers_widgets_values = []
+        
+        #creating the appropiate number of widgets and storing a reference
+        #in layers_widgets list
+        option_list = ('opcion1','opcion2')
+        for i in range(int(self.layers.get())):
+            selected_option = tk.StringVar()
+            selected_option.set(option_list[0])
+            n_layer = tk.Label(self, text='Layer number %s :' %(i+1))
+            layer_widget = tk.OptionMenu(self,selected_option,*option_list)
+            n_layer.grid(row=int(i)+2, column=0, padx=1)
+            layer_widget.grid(row=int(i)+2, column=1, padx=1)
+            self.layers_widgets.append([n_layer,layer_widget])
+            self.layers_widgets_values.append(selected_option)
+        
+        
+        
 
 
 class Toolbar(tk.Frame):
@@ -111,12 +165,13 @@ class Toolbar(tk.Frame):
         self.controller = controller
               
         #make a toolbar button for switching between frames
-        for F in ('StartPage', 'PageOne', 'PageTwo'):
+        for F in ('StartPage', 'PageOne', 'PageTwo', 'Compile'):
             self.new_button(controller,F)
         
     #make a toolbar button for switching between frames
     def new_button(self,controller, page_name):
-        button = tk.Button(self, text=page_name, command=lambda: controller.show_frame(page_name))
+        button = tk.Button(self, text=page_name,
+                           command=lambda: controller.show_frame(page_name))
         button.pack(side='left', fill='x', expand=False, ipady=3)
 
 
@@ -127,8 +182,8 @@ class StatusBar(tk.Frame):
         self.label = tk.Label(self,text='testing...', bd=1, relief='sunken', anchor='sw')
         self.label.pack(fill='x')
 
-    def set_status(self, status_text, *args):
-        self.label.config(text=status_text % args)
+    def set_status(self, status_text):
+        self.label.config(text=status_text)
         self.label.update_idletasks()
     
     def clear_status(self):
