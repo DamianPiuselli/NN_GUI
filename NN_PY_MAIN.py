@@ -30,15 +30,15 @@ class SampleApp(tk.Tk):
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
         # will be raised above the others
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self.container = tk.Frame(self)
+        self.container.pack(side="top", fill="both", expand=True, anchor='nw' )
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
         for F in (StartPage, PageOne, PageTwo, Compile):
             page_name = F.__name__
-            frame = F(parent=container, controller=self)
+            frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame
 
             # put all of the pages in the same location;
@@ -194,9 +194,9 @@ class Toolbar(tk.Frame):
         
     #make a toolbar button for switching between frames
     def new_button(self,controller, page_name):
-        button = ttk.Button(self, text=page_name,
+        self.button = ttk.Button(self, text=page_name,
                            command=lambda: controller.show_frame(page_name))
-        button.pack(side='left', fill='x', expand=False, ipady=3)
+        self.button.pack(side='left', fill='x', expand=False, ipady=3)
 
 
 class StatusBar(tk.Frame):
