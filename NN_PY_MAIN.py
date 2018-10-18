@@ -8,7 +8,7 @@ Created on Tue Oct  9 22:39:53 2018
 
 import tkinter as tk
 from tkinter import ttk as ttk
-from tkinter import font  as tkfont 
+from tkinter import font as tkfont 
 
 
 class SampleApp(tk.Tk):
@@ -160,11 +160,12 @@ class LayerWidget(tk.Frame):
         self.layer_index = layer_index
         self.layer_type = tk.StringVar()
         self.default_layer_type = parent.layer_types[0]
+        self.description_font = tkfont.Font(size=10, weight='bold')
         #number of the layer
         self.label = ttk.Label(self, text='Layer number %s :' %(self.layer_index+1), justify='left')
         self.label.grid(row=0, column=0, rowspan=2, padx=1)
         #option menu for the layer type and description 
-        self.layertype_label = ttk.Label(self, text='Layer type')
+        self.layertype_label = ttk.Label(self, text='Layer type', font=self.description_font)
         self.layertype_label.grid(row=0, column=1, padx=1)
         self.layertype_widget = ttk.OptionMenu(self,self.layer_type,
                                                self.default_layer_type,*parent.layer_types)
@@ -172,12 +173,14 @@ class LayerWidget(tk.Frame):
         #add a separator below the widget
         self.separator = ttk.Separator(self, orient="horizontal")
         self.separator.grid(row=2, column=0,  columnspan=20, sticky="we")
-        #add a trace to
-        self.layer_type.trace('w',self.draw_something)
-#### testeando callbacks!
-    def draw_something(self, *args):
+        #add a trace to the layer type
+        self.layer_type.trace('w',self.draw_options)
+    #this method will draw the corresponding options for a type of layer, once
+    #the layer type is selected.
+    def draw_options(self, *args):
         self.layertype_label1 = ttk.Label(self, text='Layer type')
         self.layertype_label1.grid(row=0, column=2, padx=1)
+
         
 class Toolbar(tk.Frame):
     
