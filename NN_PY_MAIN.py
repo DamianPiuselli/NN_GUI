@@ -31,7 +31,7 @@ class SampleApp(tk.Tk):
         # on top of each other, then the one we want visible
         # will be raised above the others
         self.container = tk.Frame(self)
-        self.container.pack(side="top", fill="both", expand=True, anchor='nw' )
+        self.container.pack(side="top", fill="x", expand=True, anchor='n' )
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
 
@@ -109,20 +109,21 @@ class Compile(tk.Frame):
         #reference to controller app
         self.controller = controller
         #title
-        self.title = tk.Label(self, text="Compile Model",bd=5, font=controller.title_font)
-        self.title.grid(row=0, columnspan=1)
+        self.title = tk.Label(self, text="Compile Model",bd=5, 
+                              font=controller.title_font, anchor= 'w')
+        self.title.grid(row=0, columnspan=1, sticky='NW')
         self.separator = ttk.Separator(self, orient="horizontal")
-        self.separator.grid(row=1, column=0,  columnspan=2, sticky="w")
+        self.separator.grid(row=1, column=0,  columnspan=10, sticky="WE")
         #first widget gets the number of layers of the NN.
         #apply button, call the draw_layers method
-        self.label = ttk.Label(self, text='Number of Layers :')
-        self.layers = tk.Spinbox(self, from_ =1, to_ =20, increment=1)
+        self.label = ttk.Label(self, text='Number of Layers :', anchor= 'w')
+        self.layers = tk.Spinbox(self, from_ =1, to_ =25, increment=1)
         self.layers_apply = ttk.Button(self, text='Apply', command=self.draw_layers)
         self.label.grid(row=2, column=0)
         self.layers.grid(row=2, column=1)
         self.layers_apply.grid(row=2, column=2)
         self.separator2 = ttk.Separator(self, orient="horizontal")
-        self.separator2.grid(row=3, column=0,  columnspan=2, sticky="w")
+        self.separator2.grid(row=3, column=0,  columnspan=10, sticky="WE")
         #list of widgets initialized empty
         self.layer_types = ('Dense','Dropout')
         self.layers_widgets = []
@@ -189,6 +190,10 @@ class LayerWidget(tk.Frame):
             self.options_widget.destroy()
             self.options_widget = DenseLayerWidget(self, self.layer_index)
             self.options_widget.grid(column = 2, row = 0, rowspan = 2)
+        elif Ltype == 'Dropout':
+            self.options_widget.destroy()
+            self.options_widget = DropoutLayerWidget(self, self.layer_index)
+            self.options_widget.grid(column = 2, row = 0, rowspan = 2)
         else:
             self.options_widget.destroy()
         
@@ -206,9 +211,9 @@ class DenseLayerWidget(tk.Frame):
                 
         #Types of available activation functions, etc
         activation_options = ['linear', 'sigmoid', 'tanh', 'softmax', 'relu',
-                              'selu', 'elu']
-        kernel_initilializer_options = ['RandomNormal', 'RandomUniform', 'Zeros', 'Ones']
-        bias_initilializer_options = ['RandomNormal', 'RandomUniform', 'Zeros', 'Ones']
+                              'selu', 'elu','none']
+        kernel_initilializer_options = ['randomNormal', 'randomUniform', 'zeros', 'ones']
+        bias_initilializer_options = ['randomNormal', 'randomUniform', 'zeros', 'ones']
         
         #drawing the necesary widgets to gather user input
         self.units_label = ttk.Label(self, text = 'Units', font = parent.description_font)
@@ -224,14 +229,15 @@ class DenseLayerWidget(tk.Frame):
         self.activation_widget.grid(row=1, column= 1, padx= 5)
 
         self.use_bias = tk.BooleanVar()
-        self.use_bias_label = ttk.Label(self, text = 'Use_bias', font = parent.description_font)
+        self.use_bias.set(True)
+        self.use_bias_label = ttk.Label(self, text = 'Use Bias', font = parent.description_font)
         self.use_bias_widget = ttk.Checkbutton(self, variable= self.use_bias,
                                                  onvalue= True, offvalue= False) 
         self.use_bias_label.grid(row=0, column= 2, padx= 5)
         self.use_bias_widget.grid(row=1, column= 2, padx= 5)
         
         self.kernel_initializer = tk.StringVar()
-        self.kernel_initializer_label = ttk.Label(self, text = 'Kernel_initializer'
+        self.kernel_initializer_label = ttk.Label(self, text = 'Kernel Initializer'
                                                   , font = parent.description_font)
         self.kernel_initializer_widget = ttk.OptionMenu(self, self.kernel_initializer, kernel_initilializer_options[0], 
                                                 *kernel_initilializer_options)
@@ -239,7 +245,7 @@ class DenseLayerWidget(tk.Frame):
         self.kernel_initializer_widget.grid(row=1, column= 3, padx= 5)
         
         self.bias_initializer = tk.StringVar()
-        self.bias_initializer_label = ttk.Label(self, text = 'Bias_initializer'
+        self.bias_initializer_label = ttk.Label(self, text = 'Bias Initializer'
                                                   , font = parent.description_font)
         self.bias_initializer_widget = ttk.OptionMenu(self, self.bias_initializer, bias_initilializer_options[0], 
                                                 *bias_initilializer_options)
@@ -249,12 +255,23 @@ class DenseLayerWidget(tk.Frame):
         # inputshape widget only if the layer is the first layer, the rest of the layers
         #get the inputshape from the previous layer in the model automatically.
         if self.layer_index == 0:
-            self.input_shape_label = ttk.Label(self, text = 'Input_shape', font = parent.description_font)
+            self.input_shape_label = ttk.Label(self, text = 'Input Shape', font = parent.description_font)
             self.input_shape = tk.Spinbox(self, from_ =1, to_ =9999, increment=1)
             self.input_shape_label.grid(row=0, column= 5, padx= 5)
             self.input_shape.grid(row=1, column= 5, padx= 5)
+     
+#Class for the droput layer widget.
+            
+class DropoutLayerWidget(tk.Frame):
+    
+    def __init__(self, parent, layer_index):
+        tk.Frame.__init__(self, parent)
+        self.layer_index = layer_index
         
-        #
+        self.rate_label = ttk.Label(self, text = 'Drop rate', font = parent.description_font)
+        self.rate = tk.Spinbox(self, from_ =0, to_ =1, increment=0.01)
+        self.rate_label.grid(row=0, column= 0, padx= 5)
+        self.rate.grid(row=1, column= 0, padx= 5)
 
         
 class Toolbar(tk.Frame):
