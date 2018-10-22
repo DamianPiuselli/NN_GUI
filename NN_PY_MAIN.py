@@ -124,10 +124,14 @@ class Compile(tk.Frame):
         self.layers_apply.grid(row=2, column=2)
         self.separator2 = ttk.Separator(self, orient="horizontal")
         self.separator2.grid(row=3, column=0,  columnspan=10, sticky="WE")
+        
         #list of widgets initialized empty
         self.layer_types = ('Dense','Dropout')
         self.layers_widgets = []
-        
+        #list of dicts with the user inputted configuration
+        self.model_configuration = []
+        # Compile buttton initilalizated as an empty frame
+        self.compile_button = tk.Frame()
                 
     #each type of layer have a different set of options and therefore 
     #different gui elements asociated to it. first draw_layers will display
@@ -141,7 +145,10 @@ class Compile(tk.Frame):
         for widget in self.layers_widgets:
             widget.destroy()
             
+        self.compile_button.destroy()
+        
         #deleting all references
+        self.model_configuration = []
         self.layers_widgets = []
         
         #creating the appropiate number of widgets and storing a reference
@@ -151,6 +158,21 @@ class Compile(tk.Frame):
             layer_widget = LayerWidget(self,i)
             layer_widget.grid(row=i+4, columnspan=5, sticky='w')
             self.layers_widgets.append(layer_widget)
+            
+        #shows a compile button in the last row    
+        self.compile_button = ttk.Button(self, text='Compile', command=self.model_data) 
+        self.compile_button.grid(rows=int(self.layers.get())+6, column = 8)
+        
+    #this function gets a list of dictionary for each layer, with the current 
+    #user input configuration
+    def model_data(self):
+                
+        self.model_configuration = []
+        
+        for widget in self.layers_widgets:
+            self.model_configuration.append(widget.layer_data())
+        print(self.model_configuration)
+        return self.model_configuration
     
        
 #custom widget for layers, to be drawn in the compile frame.        
@@ -160,10 +182,12 @@ class LayerWidget(tk.Frame):
         tk.Frame.__init__(self, parent)
         #number of the layer stored in layed_index
         self.layer_index = layer_index
+        #user info about the layer configuration is stored in a dict
+        self.layer_dict = {}
         #type of the layer stored as a tk.stringvar
         self.layer_type = tk.StringVar()
         #default layer type is none
-        self.default_layer_type = None
+        self.default_layer_type = 'Dense'
         #font for the labels
         self.description_font = tkfont.Font(size=10, weight='bold')
         #number of the layer label widget
@@ -182,6 +206,7 @@ class LayerWidget(tk.Frame):
         self.layer_type.trace('w', self.draw_options)
         #initialize options_widget as an empty frame (hidden)
         self.options_widget = tk.Frame()    
+             
     #this method will draw the corresponding options for a type of layer, once
     #the layer type is selected.
     def draw_options(self, *args):
@@ -194,8 +219,15 @@ class LayerWidget(tk.Frame):
             self.options_widget.destroy()
             self.options_widget = DropoutLayerWidget(self, self.layer_index)
             self.options_widget.grid(column = 2, row = 0, rowspan = 2)
-        else:
-            self.options_widget.destroy()
+
+    #this method outputs a dictionary of the current information about the layer
+    #calls the relevant layer options widget for configuration information        
+    def layer_data(self):
+        self.layer_dict = self.options_widget.export_options()
+        Ltype = self.layer_type.get()
+        self.layer_dict['layer_type'] = Ltype
+        return self.layer_dict
+    
         
 
 #this class will display all the configuration options for the Dense layer type
@@ -205,8 +237,10 @@ class DenseLayerWidget(tk.Frame):
     def __init__(self, parent, layer_index):
         tk.Frame.__init__(self, parent)
         self.layer_index = layer_index
+        #initialize options_dict empty, to store user input
+        self.options_dict = {}
         #Configurable parameteres for dense layers
-        dense_options = ['units', 'activation', 'use_bias', 'kernel_initilializer',
+        self.dense_options = ['units', 'activation', 'use_bias', 'kernel_initilializer',
                          'bias_initializer', 'input_shape']
                 
         #Types of available activation functions, etc
@@ -259,6 +293,29 @@ class DenseLayerWidget(tk.Frame):
             self.input_shape = tk.Spinbox(self, from_ =1, to_ =9999, increment=1)
             self.input_shape_label.grid(row=0, column= 5, padx= 5)
             self.input_shape.grid(row=1, column= 5, padx= 5)
+        
+        # export_options generates a dictionary of the current user values in the widget        
+    def export_options(self):
+        #generating keys for the dictionary, if not the first layer, no input shape required
+        if self.layer_index == 0: 
+            keys = self.dense_options[:-1]
+        else:
+            keys = self.dense_options
+        
+        #generating values
+        values = []
+        values.append(self.units.get())
+        values.append(self.activation.get())
+        values.append(self.use_bias.get())
+        values.append(self.kernel_initializer.get())
+        values.append(self.bias_initializer.get())
+        if self.layer_index == 0: 
+            values.append(self.input_shape.get())
+            
+        #generating dictionary
+        self.options_dict = dict(zip(keys,values))
+        return self.options_dict
+
      
 #Class for the droput layer widget.
             
@@ -267,11 +324,21 @@ class DropoutLayerWidget(tk.Frame):
     def __init__(self, parent, layer_index):
         tk.Frame.__init__(self, parent)
         self.layer_index = layer_index
+        #initialize options_dict empty, to store user input
+        self.options_dict = {}
         
         self.rate_label = ttk.Label(self, text = 'Drop rate', font = parent.description_font)
         self.rate = tk.Spinbox(self, from_ =0, to_ =1, increment=0.01)
         self.rate_label.grid(row=0, column= 0, padx= 5)
         self.rate.grid(row=1, column= 0, padx= 5)
+    
+    # export_options generates a dictionary of the current user values in the widget        
+    def export_options(self):
+        self.options_dict = {}
+        rate = self.rate.get()
+        self.options_dict['rate'] = rate
+        return self.options_dict
+        
 
         
 class Toolbar(tk.Frame):
