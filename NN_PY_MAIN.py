@@ -9,7 +9,8 @@ Created on Tue Oct  9 22:39:53 2018
 import tkinter as tk
 from tkinter import ttk as ttk
 from tkinter import font as tkfont 
-
+#from keras import Sequential
+#from keras.layers import Dense, Dropout
 
 class SampleApp(tk.Tk):
 
@@ -165,15 +166,34 @@ class Compile(tk.Frame):
         
     #this function gets a list of dictionary for each layer, with the current 
     #user input configuration
-    def model_data(self):
-                
+    def model_data(self):                
         self.model_configuration = []
         
         for widget in self.layers_widgets:
             self.model_configuration.append(widget.layer_data())
         print(self.model_configuration)
         return self.model_configuration
-    
+    #returns the adequate keras function to build the network from the information
+    #passed in each dictionary in model_data
+    def compile_layer(self, **kargs):
+        
+        if kargs['layer_type'] == 'Dense' and kargs['layer_index'] == 0:
+            model.add(Dense(units= int(kargs['layer_type']), activation= kargs['activation'], 
+                            use_bias= kargs['use_bias'], kernel_initializer= kargs['kernel_initializer'],
+                            bias_initializer= kargs['bias_initializer'], input_dim= kargs['input_shape']))
+        
+        elif kargs['layer_type'] == 'Dense':
+            model.add(Dense(units= int(kargs['layer_type']), activation= kargs['activation'], 
+                            use_bias= kargs['use_bias'], kernel_initializer= kargs['kernel_initializer'],
+                            bias_initializer= kargs['bias_initializer']))
+            
+        elif kargs['layer_type'] == 'Dense':
+            model.add(Dropout(rate= float(kargs['rate'])))
+        
+        
+    #multiple calls to compile layer method
+    def compile_network(self):
+        pass
        
 #custom widget for layers, to be drawn in the compile frame.        
 class LayerWidget(tk.Frame):
@@ -226,6 +246,7 @@ class LayerWidget(tk.Frame):
         self.layer_dict = self.options_widget.export_options()
         Ltype = self.layer_type.get()
         self.layer_dict['layer_type'] = Ltype
+        self.layer_dict['layer_index'] = self.layer_index
         return self.layer_dict
     
         
@@ -296,11 +317,7 @@ class DenseLayerWidget(tk.Frame):
         
         # export_options generates a dictionary of the current user values in the widget        
     def export_options(self):
-        #generating keys for the dictionary, if not the first layer, no input shape required
-        if self.layer_index == 0: 
-            keys = self.dense_options[:-1]
-        else:
-            keys = self.dense_options
+        keys = self.dense_options
         
         #generating values
         values = []
