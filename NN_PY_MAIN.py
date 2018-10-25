@@ -9,6 +9,9 @@ Created on Tue Oct  9 22:39:53 2018
 import tkinter as tk
 from tkinter import ttk as ttk
 from tkinter import font as tkfont 
+from tkinter import filedialog
+import pandas as pd
+import numpy as np
 #from keras import Sequential
 #from keras.layers import Dense, Dropout
 
@@ -37,7 +40,7 @@ class SampleApp(tk.Tk):
         self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, PageOne, PageTwo, Compile):
+        for F in (StartPage, PageOne, LoadData, Compile):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame
@@ -92,16 +95,30 @@ class PageOne(tk.Frame):
         button.pack()
 
 
-class PageTwo(tk.Frame):
+class LoadData(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        #reference to controller app
         self.controller = controller
-        label = tk.Label(self, text="This is page 2", font=controller.title_font)
+        #title
+        label = tk.Label(self, text="Load data", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
-        button = tk.Button(self, text="change status",
-                           command=lambda: controller.statusbar.set_status("tessssssst2"))
+        #initializing train and test data
+        self.train_data = None
+        self.test_data = None
+        button = tk.Button(self, text="Load Train Data",
+                           command=lambda: self.load_train_data())
         button.pack()
+    #load csv or excel files as train_data    
+    def load_train_data(self):
+        file_path = filedialog.askopenfilename(title= 'select file', filetypes= [('Tabular Data', '*.csv *.xls *.xlsx')])
+        if file_path[-3:] == 'csv':
+            self.train_data = pd.read_csv(file_path)
+        elif file_path[-3:] == 'xls' or file_path[-4:] == 'xlsx':
+            self.train_data = pd.read_excel(file_path)
+        
+        print(self.train_data)
 
 class Compile(tk.Frame):
 
@@ -373,7 +390,7 @@ class Toolbar(tk.Frame):
         self.controller = controller
               
         #make a toolbar button for switching between frames
-        for F in ('StartPage', 'PageOne', 'PageTwo', 'Compile'):
+        for F in ('StartPage', 'PageOne', 'LoadData', 'Compile'):
             self.new_button(controller,F)
         
     #make a toolbar button for switching between frames
