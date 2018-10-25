@@ -187,7 +187,7 @@ class LayerWidget(tk.Frame):
         #type of the layer stored as a tk.stringvar
         self.layer_type = tk.StringVar()
         #default layer type is none
-        self.default_layer_type = 'Dense'
+        self.default_layer_type = None
         #font for the labels
         self.description_font = tkfont.Font(size=10, weight='bold')
         #number of the layer label widget
