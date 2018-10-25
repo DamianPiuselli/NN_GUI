@@ -193,7 +193,15 @@ class Compile(tk.Frame):
         
     #multiple calls to compile layer method
     def compile_network(self):
-        pass
+        ####keras.backend.clear_session()  agregar funcion que borre el modelo
+        model = Sequential()
+        
+        self.model_data()
+               
+        for layer in self.model_configuration:
+            self.compile_layer(layer)
+        print(model.summary())
+        
        
 #custom widget for layers, to be drawn in the compile frame.        
 class LayerWidget(tk.Frame):
