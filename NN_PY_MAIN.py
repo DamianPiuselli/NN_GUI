@@ -12,8 +12,9 @@ from tkinter import font as tkfont
 from tkinter import filedialog
 import pandas as pd
 import numpy as np
-#from keras import Sequential
-#from keras.layers import Dense, Dropout
+from keras import Sequential
+from keras.layers import Dense, Dropout
+from keras import backend as K
 
 class SampleApp(tk.Tk):
 
@@ -178,7 +179,7 @@ class Compile(tk.Frame):
             self.layers_widgets.append(layer_widget)
             
         #shows a compile button in the last row    
-        self.compile_button = ttk.Button(self, text='Compile', command=self.model_data) 
+        self.compile_button = ttk.Button(self, text='Compile', command=self.compile_network) 
         self.compile_button.grid(rows=int(self.layers.get())+6, column = 8)
         
     #this function gets a list of dictionary for each layer, with the current 
@@ -188,36 +189,37 @@ class Compile(tk.Frame):
         
         for widget in self.layers_widgets:
             self.model_configuration.append(widget.layer_data())
-        print(self.model_configuration)
-        return self.model_configuration
+
     #returns the adequate keras function to build the network from the information
     #passed in each dictionary in model_data
     def compile_layer(self, **kargs):
         
         if kargs['layer_type'] == 'Dense' and kargs['layer_index'] == 0:
-            model.add(Dense(units= int(kargs['layer_type']), activation= kargs['activation'], 
+            self.model.add(Dense(units= int(kargs['units']), activation= kargs['activation'], 
                             use_bias= kargs['use_bias'], kernel_initializer= kargs['kernel_initializer'],
-                            bias_initializer= kargs['bias_initializer'], input_dim= kargs['input_shape']))
+                            bias_initializer= kargs['bias_initializer'], input_dim= int(kargs['input_shape'])))
         
         elif kargs['layer_type'] == 'Dense':
-            model.add(Dense(units= int(kargs['layer_type']), activation= kargs['activation'], 
+            self.model.add(Dense(units= int(kargs['units']), activation= kargs['activation'], 
                             use_bias= kargs['use_bias'], kernel_initializer= kargs['kernel_initializer'],
                             bias_initializer= kargs['bias_initializer']))
             
-        elif kargs['layer_type'] == 'Dense':
-            model.add(Dropout(rate= float(kargs['rate'])))
+        elif kargs['layer_type'] == 'Dropout':
+            self.model.add(Dropout(rate= float(kargs['rate'])))
         
         
     #multiple calls to compile layer method
     def compile_network(self):
-        ####keras.backend.clear_session()  agregar funcion que borre el modelo
-        model = Sequential()
+        
+        K.clear_session()
+        self.model = Sequential()
         
         self.model_data()
                
         for layer in self.model_configuration:
-            self.compile_layer(layer)
-        print(model.summary())
+            print(layer)
+            self.compile_layer(**layer)
+        print(self.model.summary())
         
        
 #custom widget for layers, to be drawn in the compile frame.        
@@ -286,14 +288,14 @@ class DenseLayerWidget(tk.Frame):
         #initialize options_dict empty, to store user input
         self.options_dict = {}
         #Configurable parameteres for dense layers
-        self.dense_options = ['units', 'activation', 'use_bias', 'kernel_initilializer',
+        self.dense_options = ['units', 'activation', 'use_bias', 'kernel_initializer',
                          'bias_initializer', 'input_shape']
                 
         #Types of available activation functions, etc
         activation_options = ['linear', 'sigmoid', 'tanh', 'softmax', 'relu',
                               'selu', 'elu','none']
-        kernel_initilializer_options = ['randomNormal', 'randomUniform', 'zeros', 'ones']
-        bias_initilializer_options = ['randomNormal', 'randomUniform', 'zeros', 'ones']
+        kernel_initilializer_options = ['RandomNormal', 'RandomUniform', 'Zeros', 'Ones']
+        bias_initilializer_options = ['RandomNormal', 'RandomUniform', 'Zeros', 'Ones']
         
         #drawing the necesary widgets to gather user input
         self.units_label = ttk.Label(self, text = 'Units', font = parent.description_font)
