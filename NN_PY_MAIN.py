@@ -12,9 +12,9 @@ from tkinter import font as tkfont
 from tkinter import filedialog
 import pandas as pd
 import numpy as np
-from keras import Sequential
-from keras.layers import Dense, Dropout
-from keras import backend as K
+#from keras import Sequential
+#from keras.layers import Dense, Dropout
+#from keras import backend as K
 
 class SampleApp(tk.Tk):
 
@@ -103,23 +103,47 @@ class LoadData(tk.Frame):
         #reference to controller app
         self.controller = controller
         #title
-        label = tk.Label(self, text="Load data", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=10)
+        self.title = tk.Label(self, text="Load Data", font=controller.title_font, anchor= 'nw', bd=5)
+        self.title.grid(row=0, columnspan=1, sticky='NW')
+        self.separator = ttk.Separator(self, orient="horizontal")
+        self.separator.grid(row=1, column=0,  columnspan=10, sticky="WE")
         #initializing train and test data
+        self.data = None
         self.train_data = None
         self.test_data = None
-        button = tk.Button(self, text="Load Train Data",
+        #load data widgets
+        self.load_data_button = ttk.Button(self, text="Open training data file",
                            command=lambda: self.load_train_data())
-        button.pack()
+        self.load_data_button.grid(row=2, column=0, sticky="W")
+        self.separator2 = ttk.Separator(self, orient="horizontal")
+        self.separator2.grid(row=3, column=0,  columnspan=10, sticky="WE") 
+        #displaying data dimensions
+        self.data_shape = tk.StringVar()
+        self.data_shape.set('No loaded data')
+        self.dim_label = tk.Label(self, textvariable= self.data_shape)
+        self.dim_label.grid(row=2, column=1, sticky='W')
+        #spliting loaded data between x_data and y_data
+        self.split_label = tk.Label(self, text= 'Split data between \nfeatures and labels')
+        self.split_label.grid(row= 4, column=0, sticky='W')
+        
     #load csv or excel files as train_data    
     def load_train_data(self):
+        #ask for the filepath, then import as a dataframe with pandas with the appropiate function
+        
         file_path = filedialog.askopenfilename(title= 'select file', filetypes= [('Tabular Data', '*.csv *.xls *.xlsx')])
         if file_path[-3:] == 'csv':
-            self.train_data = pd.read_csv(file_path)
+            self.data = pd.read_csv(file_path)
         elif file_path[-3:] == 'xls' or file_path[-4:] == 'xlsx':
-            self.train_data = pd.read_excel(file_path)
-        
-        print(self.train_data)
+            self.data = pd.read_excel(file_path)
+        else:
+            self.data = None
+        #number of columns and rows in the datafile
+        if self.data is not None:
+            rows, columns = self.data.shape
+            self.data_shape.set('Loaded data has '+str(columns) +' columns and ' +str(rows)+' rows')
+        else:
+            self.data_shape.set('No Loaded Data')
+
 
 class Compile(tk.Frame):
 
