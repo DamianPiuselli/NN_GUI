@@ -293,7 +293,7 @@ class DenseLayerWidget(tk.Frame):
                 
         #Types of available activation functions, etc
         activation_options = ['linear', 'sigmoid', 'tanh', 'softmax', 'relu',
-                              'selu', 'elu','none']
+                              'selu', 'elu']
         kernel_initilializer_options = ['RandomNormal', 'RandomUniform', 'Zeros', 'Ones']
         bias_initilializer_options = ['RandomNormal', 'RandomUniform', 'Zeros', 'Ones']
         
