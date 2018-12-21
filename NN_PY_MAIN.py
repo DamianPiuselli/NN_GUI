@@ -107,44 +107,72 @@ class LoadData(tk.Frame):
         self.title.grid(row=0, columnspan=1, sticky='NW')
         self.separator = ttk.Separator(self, orient="horizontal")
         self.separator.grid(row=1, column=0,  columnspan=10, sticky="WE")
-        #initializing train and test data
-        self.data = None
-        self.train_data = None
-        self.test_data = None
-        #load data widgets
-        self.load_data_button = ttk.Button(self, text="Open training data file",
-                           command=lambda: self.load_train_data())
+        #initializing data containers
+        self.train_features = None
+        self.train_labels = None
+        self.pred_features = None
+        #load training features widgets
+        self.load_data_button = ttk.Button(self,width=30 , text="Open training features file",
+                           command=lambda: self.load_data(container='train_features'))
         self.load_data_button.grid(row=2, column=0, sticky="W")
         self.separator2 = ttk.Separator(self, orient="horizontal")
         self.separator2.grid(row=3, column=0,  columnspan=10, sticky="WE") 
         #displaying data dimensions
-        self.data_shape = tk.StringVar()
-        self.data_shape.set('No loaded data')
-        self.dim_label = tk.Label(self, textvariable= self.data_shape)
-        self.dim_label.grid(row=2, column=1, sticky='W')
-        #spliting loaded data between x_data and y_data
-        self.split_label = tk.Label(self, text= 'Split data between \nfeatures and labels')
-        self.split_label.grid(row= 4, column=0, sticky='W')
+        self.train_features_shape = tk.StringVar()
+        self.train_features_shape.set('No loaded data')
+        self.dim_label1 = tk.Label(self, textvariable= self.train_features_shape)
+        self.dim_label1.grid(row=2, column=1, sticky='W')
+
+        #load training labels widgets
+        self.load_data_button2 = ttk.Button(self, width=30, text="Open training labels file",
+                           command=lambda: self.load_data(container='train_labels'))
+        self.load_data_button2.grid(row=4, column=0, sticky="W")
+        self.separator2 = ttk.Separator(self, orient="horizontal")
+        self.separator2.grid(row=5, column=0,  columnspan=10, sticky="WE") 
+        #displaying data dimensions
+        self.train_labels_shape = tk.StringVar()
+        self.train_labels_shape.set('No loaded data')
+        self.dim_label2 = tk.Label(self, textvariable= self.train_labels_shape)
+        self.dim_label2.grid(row=4, column=1, sticky='W')
         
-    #load csv or excel files as train_data    
-    def load_train_data(self):
-        #ask for the filepath, then import as a dataframe with pandas with the appropiate function
+        #load prediction labels widgets
+        self.load_data_button3 = ttk.Button(self, width=30, text="Open prediction features file",
+                           command=lambda: self.load_data(container='pred_features'))
+        self.load_data_button3.grid(row=6, column=0, sticky="W")
+        self.separator2 = ttk.Separator(self, orient="horizontal")
+        self.separator2.grid(row=7, column=0,  columnspan=10, sticky="WE") 
+        #displaying data dimensions
+        self.pred_features_shape = tk.StringVar()
+        self.pred_features_shape.set('No loaded data')
+        self.dim_label3 = tk.Label(self, textvariable= self.pred_features_shape)
+        self.dim_label3.grid(row=6, column=1, sticky='W')
+
         
+    #load csv or excel files to a container
+    def load_data(self, container):
+        #ask for the filepath, then import as a dataframe with pandas with the appropiate function 
         file_path = filedialog.askopenfilename(title= 'select file', filetypes= [('Tabular Data', '*.csv *.xls *.xlsx')])
         if file_path[-3:] == 'csv':
-            self.data = pd.read_csv(file_path)
+            readdata = pd.read_csv(file_path)
         elif file_path[-3:] == 'xls' or file_path[-4:] == 'xlsx':
-            self.data = pd.read_excel(file_path)
+            readdata = pd.read_excel(file_path)
         else:
-            self.data = None
-        #number of columns and rows in the datafile
-        if self.data is not None:
-            rows, columns = self.data.shape
-            self.data_shape.set('Loaded data has '+str(columns) +' columns and ' +str(rows)+' rows')
-        else:
-            self.data_shape.set('No Loaded Data')
-
-
+            readdata = None
+        #get data dimensions
+        if readdata is not None:
+            rows, columns = readdata.shape
+        
+        #write data to container
+        if container is 'train_features':
+            self.train_features = readdata
+            self.train_features_shape.set('Loaded data has '+str(columns) +' features and ' +str(rows)+' samples')
+        elif container is 'train_labels':
+            self.train_labels = readdata
+            self.train_labels_shape.set('Loaded data has '+str(columns) +' labels and ' +str(rows)+' samples')
+        elif container is 'pred_features':
+            self.pred_features = readdata
+            self.pred_features_shape.set('Loaded data has '+str(columns) +' features and ' +str(rows)+' samples')
+        
 class Compile(tk.Frame):
 
     def __init__(self, parent, controller):
